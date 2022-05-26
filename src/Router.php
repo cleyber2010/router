@@ -32,6 +32,8 @@ class Router
     {
         preg_match_all("/{([^}]+)}(.*)/U", $route, $key, PREG_SET_ORDER);
         $dataDiff = array_values(array_diff(explode("/", $this->patch), explode("/", $route)));
+        $url = explode("/", $this->patch);
+        $data = [];
         $i = 0;
 
         if (!empty($dataDiff)) {
@@ -39,6 +41,14 @@ class Router
             foreach ($key as $keys) {
                 $data[$keys[1]] = $dataDiff[$i++];
             }
+
+            if ($route != "/") {
+                $url  = "/" . $url[1] . "/" . implode("/", array_keys($data));
+                if (count(explode("/", $this->patch)) == count(explode("/", $url))) {
+                    $this->patch = $url;
+                }
+            }
+
         }
 
         $route = preg_replace("/[^a-zA-Z0-9\/]/", "", $route);
@@ -57,7 +67,7 @@ class Router
 
     public function dispatch(): void
     {
-        var_dump($this->routes, $this->patch);
+        var_dump($this->patch);
         if (empty($this->routes[$this->patch]) || empty($this->routes[$this->patch][$this->httpMethod])) {
             var_dump(405);
             return;
