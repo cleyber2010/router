@@ -114,7 +114,6 @@ class Router {
         } else {
             echo "NOT FOUND";
         }
-        var_dump($route);
     }
 
     private function handler(string $handler)
