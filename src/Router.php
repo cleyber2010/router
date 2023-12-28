@@ -99,13 +99,18 @@ class Router {
             $controller = $route["controller"];
             $method = $route["method"];
             $data = $route["data"];
-
-            $newController = new $controller();
-            if (method_exists($newController, $method)) {
-                $newController->$method($data);
+            
+            if (class_exists($controller)) {
+                $newController = new $controller();
+                if (method_exists($newController, $method)) {
+                    $newController->$method($data);
+                } else {
+                    echo "METHOD NOT IMPLEMENTED";
+                }
             } else {
-                echo "METHOD NOT IMPLEMENTED";
+                echo "CLASS NOT IMPLEMENTED";
             }
+            
         } else {
             echo "NOT FOUND";
         }
