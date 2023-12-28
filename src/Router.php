@@ -35,13 +35,13 @@ class Router {
     {
         $this->projectUrl = rtrim($projectUrl, "/");
         $this->separator = $separator;
+        $this->httpMethod = $_SERVER["REQUEST_METHOD"];
     }
 
     public function get(string $path, string $handler)
     {
         $this->path = rtrim($path, "/");
         $this->handler = $handler;
-        $this->httpMethod = "GET";
         $this->addRoute($this->httpMethod, $path);
     }
 
@@ -49,7 +49,6 @@ class Router {
     {
         $this->path = rtrim($path, "/");
         $this->handler = $handler;
-        $this->httpMethod = "POST";
         $this->addRoute($this->httpMethod, $path);
     }
 
@@ -65,16 +64,14 @@ class Router {
         
         $keys = array_values($keys);
         $values = array_values($values);
-        
-        if ($this->url != "/") {
+
+        if ($this->url != "/" && !in_array("", $keys) && !in_array("", $values) && count($keys) == count($values)) {
             $count = 0;
             foreach ($keys as $key) {
                 $this->data[$key] = $values[$count];
                 $count++;
             }
          }
-        
-        var_dump($this->data, $values);
 
         $route = function () use ($path) {
             return [
@@ -93,6 +90,25 @@ class Router {
     protected function dispatch(array $route)
     {
         $route = $route[$this->httpMethod];
+        $path = array_diff(explode("/", $route["path"]), explode("/", trim($this->url, "/")));
+        $url = array_diff(explode("/", trim($this->url, "/")), explode("/", $route["path"]));
+
+        $route["path"] = str_replace($path, $url, $route["path"]);
+        var_dump($this->url);
+        if (!empty($route) && $route["path"] == trim($this->url, "/")) {
+            $controller = $route["controller"];
+            $method = $route["method"];
+            $data = $route["data"];
+
+            $newController = new $controller();
+            if (method_exists($newController, $method)) {
+                $newController->$method($data);
+            } else {
+                echo "METHOD NOT IMPLEMENTED";
+            }
+        } else {
+            echo "NOT FOUND";
+        }
         var_dump($route);
     }
 
